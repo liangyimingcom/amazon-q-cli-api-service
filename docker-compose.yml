@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  qcli-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - DEBUG=false
+      - SESSION_EXPIRY=3600
+      - MAX_HISTORY_LENGTH=10
+      - QCLI_TIMEOUT=30
+      - FORCE_CHINESE=true
+    volumes:
+      # 如果需要挂载Amazon Q CLI配置
+      - ~/.aws:/home/appuser/.aws:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

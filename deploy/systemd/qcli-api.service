@@ -1,0 +1,30 @@
+[Unit]
+Description=Amazon Q CLI API Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/qcli-api-service
+Environment=PATH=/opt/qcli-api-service/venv/bin
+ExecStart=/opt/qcli-api-service/venv/bin/python app.py
+Restart=always
+RestartSec=10
+
+# 环境变量
+Environment=HOST=0.0.0.0
+Environment=PORT=8080
+Environment=DEBUG=false
+Environment=SESSION_EXPIRY=3600
+Environment=MAX_HISTORY_LENGTH=10
+Environment=QCLI_TIMEOUT=30
+Environment=FORCE_CHINESE=true
+
+# 日志配置
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=qcli-api
+
+[Install]
+WantedBy=multi-user.target
