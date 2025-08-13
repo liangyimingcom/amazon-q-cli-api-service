@@ -207,7 +207,7 @@ def run_q_chat(message: str, app_id: str, message_id: str, user_id: str) -> str:
         
         # 使用文件作为输入运行 q chat
         q_process = subprocess.Popen(
-            ["q", "chat"],
+            ["q", "chat", "--trust-all-tools"],
             stdin=open(temp_file_path, "r"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

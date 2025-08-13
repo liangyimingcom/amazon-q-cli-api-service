@@ -5,7 +5,8 @@ Flask应用工厂 - 核心版本
 """
 
 import logging
-from flask import Flask, jsonify
+import json
+from flask import Flask, jsonify, Response
 from qcli_api_service.config import config
 from qcli_api_service.api.routes import register_routes
 
@@ -17,6 +18,21 @@ def create_app() -> Flask:
     # 配置Flask
     app.config['DEBUG'] = config.DEBUG
     app.config['TESTING'] = False
+    # 确保JSON响应使用UTF-8编码，不转义非ASCII字符
+    app.config['JSON_AS_ASCII'] = False
+    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+    
+    # 自定义JSON编码器，确保中文正确显示
+    def custom_jsonify(data):
+        """自定义JSON响应函数，确保中文正确显示"""
+        response = Response(
+            json.dumps(data, ensure_ascii=False, indent=2),
+            mimetype='application/json; charset=utf-8'
+        )
+        return response
+    
+    # 将自定义函数添加到应用上下文
+    app.custom_jsonify = custom_jsonify
     
     # 设置日志
     if not app.debug:
@@ -51,21 +67,27 @@ def register_error_handlers(app: Flask) -> None:
     
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({
+        response = app.custom_jsonify({
             "error": "接口不存在",
             "code": 404
-        }), 404
+        })
+        response.status_code = 404
+        return response
     
     @app.errorhandler(405)
     def method_not_allowed(error):
-        return jsonify({
+        response = app.custom_jsonify({
             "error": "请求方法不允许",
             "code": 405
-        }), 405
+        })
+        response.status_code = 405
+        return response
     
     @app.errorhandler(500)
     def internal_error(error):
-        return jsonify({
+        response = app.custom_jsonify({
             "error": "内部服务器错误",
             "code": 500
-        }), 500
+        })
+        response.status_code = 500
+        return response

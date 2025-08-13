@@ -99,6 +99,21 @@ curl -X POST http://localhost:8080/api/v1/chat/stream \
   --no-buffer
 ```
 
+**流式聊天**:
+```bash
+# 1. 创建会话
+SESSION_ID=$(curl -s -X POST http://localhost:8080/api/v1/sessions | jq -r '.session_id')
+
+# 2. 发送消息
+
+curl -X POST http://localhost:8080/api/v1/chat/stream \
+  -H "Content-Type: application/json" \
+  -d "{\"session_id\": \"$SESSION_ID\", \"message\": \"你好，请介绍一下自己\"}" \
+  --no-buffer
+```
+
+
+
 详细API文档请参考 [docs/API.md](docs/API.md)。
 
 ## 🏗️ 项目结构

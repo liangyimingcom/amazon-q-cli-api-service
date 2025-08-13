@@ -6,7 +6,8 @@ API控制器 - 核心版本
 
 import logging
 import time
-from flask import request, jsonify, Response, stream_with_context
+import json
+from flask import request, jsonify, Response, stream_with_context, current_app
 from qcli_api_service.models.core import ChatRequest, ChatResponse, ErrorResponse, Message
 from qcli_api_service.services.session_manager import session_manager
 from qcli_api_service.services.qcli_service import qcli_service
@@ -66,11 +67,15 @@ def chat():
         # 返回响应
         response = ChatResponse.create(session.session_id, response_text)
         
-        return jsonify({
+        # 创建响应，确保中文正确显示
+        response_data = {
             "session_id": response.session_id,
             "message": response.message,
             "timestamp": response.timestamp
-        })
+        }
+        
+        # 使用自定义JSON响应函数
+        return current_app.custom_jsonify(response_data)
         
     except Exception as e:
         logger.error(f"聊天接口错误: {e}")
@@ -172,7 +177,7 @@ def health():
         
         status = "healthy" if qcli_available else "degraded"
         
-        return jsonify({
+        return current_app.custom_jsonify({
             "status": status,
             "timestamp": time.time(),
             "qcli_available": qcli_available,
@@ -182,11 +187,14 @@ def health():
         
     except Exception as e:
         logger.error(f"健康检查错误: {e}")
-        return jsonify({
+        response_data = {
             "status": "unhealthy",
             "timestamp": time.time(),
             "error": str(e)
-        }), 500
+        }
+        response = current_app.custom_jsonify(response_data)
+        response.status_code = 500
+        return response
 
 
 def create_session():
@@ -194,10 +202,13 @@ def create_session():
     try:
         session = session_manager.create_session()
         
-        return jsonify({
+        response_data = {
             "session_id": session.session_id,
             "created_at": session.created_at
-        }), 201
+        }
+        response = current_app.custom_jsonify(response_data)
+        response.status_code = 201
+        return response
         
     except Exception as e:
         logger.error(f"创建会话错误: {e}")
@@ -212,7 +223,7 @@ def get_session(session_id: str):
         if not session_info:
             return _error_response("会话不存在", 404)
         
-        return jsonify(session_info)
+        return current_app.custom_jsonify(session_info)
         
     except Exception as e:
         logger.error(f"获取会话错误: {e}")
@@ -227,7 +238,7 @@ def delete_session(session_id: str):
         if not success:
             return _error_response("会话不存在", 404)
         
-        return jsonify({"message": "会话已删除"}), 200
+        return current_app.custom_jsonify({"message": "会话已删除"})
         
     except Exception as e:
         logger.error(f"删除会话错误: {e}")
@@ -237,7 +248,9 @@ def delete_session(session_id: str):
 def _error_response(message: str, code: int) -> tuple:
     """创建错误响应"""
     error = ErrorResponse(error=message, code=code)
-    return jsonify(error.to_dict()), code
+    response = current_app.custom_jsonify(error.to_dict())
+    response.status_code = code
+    return response
 
 
 def _escape_json(text: str) -> str:

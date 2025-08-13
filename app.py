@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Amazon Q CLI API服务主入口 - 核心版本
 
@@ -7,8 +8,12 @@ Amazon Q CLI API服务主入口 - 核心版本
 
 import logging
 import sys
+import os
 from qcli_api_service.config import config
 from qcli_api_service.app import create_app
+
+# 设置环境编码
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 
 def main():
