@@ -125,7 +125,7 @@ class InputValidator:
     @staticmethod
     def _contains_malicious_content(message: str) -> bool:
         """
-        检查是否包含恶意内容
+        改进的恶意内容检测 - 更精确的安全检查
         
         参数:
             message: 消息内容
@@ -133,17 +133,40 @@ class InputValidator:
         返回:
             是否包含恶意内容
         """
-        # 基本的恶意内容检查
+        # 更精确的恶意内容检查 - 只检测真正危险的模式
         malicious_patterns = [
-            r'<script[^>]*>.*?</script>',  # JavaScript
+            r'<script[^>]*>.*?</script>',  # JavaScript脚本块
             r'javascript:',  # JavaScript协议
-            r'on\w+\s*=',  # 事件处理器
-            r'<iframe[^>]*>',  # iframe标签
-            r'<object[^>]*>',  # object标签
-            r'<embed[^>]*>',  # embed标签
+            r'on\w+\s*=\s*["\'][^"\']*["\']',  # 事件处理器属性
+            r'<iframe[^>]*src\s*=',  # 带src的iframe（可能的XSS）
+            r'<object[^>]*data\s*=',  # 带data的object（可能的代码执行）
+            r'<embed[^>]*src\s*=',  # 带src的embed（可能的代码执行）
+            r'<link[^>]*href\s*=\s*["\']javascript:',  # JavaScript链接
+            r'<meta[^>]*http-equiv\s*=\s*["\']refresh',  # 自动刷新（可能的重定向攻击）
         ]
         
-        message_lower = message.lower()
+        # 允许的安全标签和模式 - 常见的格式化和代码展示
+        safe_patterns = [
+            r'</?code>',  # 代码标签
+            r'</?pre>',   # 预格式化标签
+            r'</?b>',     # 粗体标签
+            r'</?i>',     # 斜体标签
+            r'</?strong>', # 强调标签
+            r'</?em>',    # 斜体强调标签
+            r'<br\s*/?>', # 换行标签
+            r'<p>',       # 段落标签（开始）
+            r'</p>',      # 段落标签（结束）
+        ]
+        
+        # 创建消息副本用于检测
+        cleaned_message = message
+        
+        # 先移除安全标签，避免误报
+        for pattern in safe_patterns:
+            cleaned_message = re.sub(pattern, '', cleaned_message, flags=re.IGNORECASE)
+        
+        # 检测剩余内容中的恶意模式
+        message_lower = cleaned_message.lower()
         for pattern in malicious_patterns:
             if re.search(pattern, message_lower, re.IGNORECASE | re.DOTALL):
                 return True

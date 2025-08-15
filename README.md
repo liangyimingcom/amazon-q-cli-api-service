@@ -8,6 +8,7 @@
 - 🔄 **流式回复** - 实时发送回复内容，提升用户体验
 - 💬 **上下文保持** - 维护对话历史，支持连续多轮对话
 - 🔧 **会话管理** - 支持多用户、多会话的并发处理
+- 📁 **会话隔离** - 每个会话在独立目录中运行，避免文件冲突
 - 🛡️ **安全防护** - 输入验证、错误处理和安全防护
 - 📊 **健康监控** - 提供健康检查和状态监控接口
 
@@ -75,6 +76,7 @@ curl -X POST http://localhost:8080/api/v1/chat \
 | `/health` | GET | 健康检查 |
 | `/api/v1/sessions` | POST | 创建会话 |
 | `/api/v1/sessions/{id}` | GET/DELETE | 会话管理 |
+| `/api/v1/sessions/{id}/files` | GET | 会话文件列表 |
 | `/api/v1/chat` | POST | 标准聊天 |
 | `/api/v1/chat/stream` | POST | 流式聊天 |
 
@@ -116,6 +118,51 @@ curl -X POST http://localhost:8080/api/v1/chat/stream \
 
 详细API文档请参考 [docs/API.md](docs/API.md)。
 
+## 📁 会话隔离功能
+
+### 核心特性
+
+- **独立工作目录**: 每个会话在以SESSION_ID命名的独立目录中运行
+- **文件隔离**: 避免不同会话之间的文件冲突和数据串扰
+- **自动管理**: 会话创建时自动创建目录，删除时自动清理
+- **API支持**: 提供API获取会话文件列表和目录信息
+
+### 使用示例
+
+```bash
+# 创建会话（自动创建工作目录）
+SESSION_ID=$(curl -s -X POST http://localhost:8080/api/v1/sessions | jq -r '.session_id')
+
+# 获取会话信息（包含工作目录路径）
+curl http://localhost:8080/api/v1/sessions/$SESSION_ID
+
+# 获取会话文件列表
+curl http://localhost:8080/api/v1/sessions/$SESSION_ID/files
+
+# 在会话中进行对话（文件操作在独立目录中）
+curl -X POST http://localhost:8080/api/v1/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"session_id\": \"$SESSION_ID\", \"message\": \"请创建一个Python脚本\"}"
+```
+
+### 管理工具
+
+```bash
+# 列出所有会话目录
+python scripts/manage_sessions.py list
+
+# 查看指定会话详情
+python scripts/manage_sessions.py detail $SESSION_ID
+
+# 清理空目录
+python scripts/manage_sessions.py cleanup-empty
+
+# 清理过期目录
+python scripts/manage_sessions.py cleanup-old --hours 24
+```
+
+详细说明请参考 [docs/SESSION_ISOLATION.md](docs/SESSION_ISOLATION.md)。
+
 ## 🏗️ 项目结构
 
 ```
@@ -127,11 +174,16 @@ amazon-q-cli-api-service/
 │   ├── utils/                 # 工具函数
 │   ├── config.py              # 配置管理
 │   └── app.py                 # Flask应用工厂
+├── sessions/                  # 会话工作目录（自动创建）
+│   ├── {session-id-1}/        # 会话1的独立工作目录
+│   ├── {session-id-2}/        # 会话2的独立工作目录
+│   └── ...                    # 其他会话目录
 ├── tests/                     # 测试代码
 │   ├── unit/                  # 单元测试
 │   └── integration/           # 集成测试
 ├── deploy/                    # 部署配置
 ├── docs/                      # 文档
+├── scripts/                   # 管理脚本
 ├── app.py                     # 应用入口
 ├── requirements.txt           # Python依赖
 └── README.md                  # 项目说明
@@ -150,6 +202,8 @@ amazon-q-cli-api-service/
 | `MAX_HISTORY_LENGTH` | 10 | 最大历史消息数 |
 | `QCLI_TIMEOUT` | 30 | Q CLI调用超时时间（秒） |
 | `FORCE_CHINESE` | true | 强制中文回复 |
+| `SESSIONS_BASE_DIR` | sessions | 会话基础目录 |
+| `AUTO_CLEANUP_SESSIONS` | true | 自动清理过期会话目录 |
 
 ## 🚀 部署
 
@@ -269,6 +323,14 @@ flake8 qcli_api_service/ tests/
 5. 提交Pull Request
 
 ## 📝 更新日志
+
+### v1.1.0 (2024-01-15)
+
+- ✨ **新增会话隔离功能** - 每个会话在独立目录中运行
+- 📁 **会话文件管理** - 新增API获取会话文件列表
+- 🛠️ **管理工具** - 提供命令行工具管理会话目录
+- 🔧 **配置增强** - 支持自定义会话基础目录
+- 📚 **文档完善** - 新增会话隔离功能详细文档
 
 ### v1.0.0 (2024-01-01)
 

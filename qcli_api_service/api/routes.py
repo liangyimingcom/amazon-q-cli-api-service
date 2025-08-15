@@ -20,6 +20,7 @@ api_bp.add_url_rule('/chat/stream', 'stream_chat', controllers.stream_chat, meth
 api_bp.add_url_rule('/sessions', 'create_session', controllers.create_session, methods=['POST'])
 api_bp.add_url_rule('/sessions/<session_id>', 'get_session', controllers.get_session, methods=['GET'])
 api_bp.add_url_rule('/sessions/<session_id>', 'delete_session', controllers.delete_session, methods=['DELETE'])
+api_bp.add_url_rule('/sessions/<session_id>/files', 'get_session_files', controllers.get_session_files, methods=['GET'])
 
 
 # 创建健康检查蓝图

@@ -8,6 +8,17 @@ import os
 from dataclasses import dataclass
 
 
+
+def get_timeout_for_request(has_context: bool = False, context_length: int = 0) -> int:
+    """根据请求类型动态计算超时时间"""
+    base_timeout = 45
+    if has_context and context_length > 0:
+        # 根据上下文长度动态调整，每1000字符增加5秒，最多增加30秒
+        context_factor = min(context_length // 1000 * 5, 30)
+        return base_timeout + context_factor
+    return base_timeout
+
+
 @dataclass
 class Config:
     """应用配置类 - 只包含核心配置"""
@@ -22,8 +33,15 @@ class Config:
     MAX_HISTORY_LENGTH: int = 10  # 最大历史消息数（简化为10条）
     
     # Q CLI配置
-    QCLI_TIMEOUT: int = 30  # Q CLI调用超时时间，单位：秒
+    QCLI_TIMEOUT: int = 45  # Q CLI调用超时时间，单位：秒（根据实际测试调整）
     FORCE_CHINESE: bool = True  # 强制使用中文回复
+    
+    # AWS配置
+    AWS_DEFAULT_REGION: str = "us-east-1"  # 默认AWS区域，减少网络延迟
+    
+    # 会话工作目录配置
+    SESSIONS_BASE_DIR: str = "sessions"  # 会话基础目录
+    AUTO_CLEANUP_SESSIONS: bool = True  # 自动清理过期会话目录
     
     @classmethod
     def from_env(cls) -> 'Config':
@@ -36,6 +54,9 @@ class Config:
             MAX_HISTORY_LENGTH=int(os.getenv("MAX_HISTORY_LENGTH", str(cls.MAX_HISTORY_LENGTH))),
             QCLI_TIMEOUT=int(os.getenv("QCLI_TIMEOUT", str(cls.QCLI_TIMEOUT))),
             FORCE_CHINESE=os.getenv("FORCE_CHINESE", "true").lower() == "true",
+            AWS_DEFAULT_REGION=os.getenv("AWS_DEFAULT_REGION", cls.AWS_DEFAULT_REGION),
+            SESSIONS_BASE_DIR=os.getenv("SESSIONS_BASE_DIR", cls.SESSIONS_BASE_DIR),
+            AUTO_CLEANUP_SESSIONS=os.getenv("AUTO_CLEANUP_SESSIONS", "true").lower() == "true",
         )
     
     def validate(self) -> None:

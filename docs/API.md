@@ -28,6 +28,7 @@ Amazon Q CLI API服务提供RESTful API接口，用于与Amazon Q CLI进行交�
     "chat": "/api/v1/chat",
     "stream_chat": "/api/v1/chat/stream",
     "sessions": "/api/v1/sessions",
+    "session_files": "/api/v1/sessions/{session_id}/files",
     "health": "/health"
   }
 }
@@ -77,13 +78,43 @@ Amazon Q CLI API服务提供RESTful API接口，用于与Amazon Q CLI进行交�
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
   "created_at": 1703123456.789,
   "last_activity": 1703123500.123,
-  "message_count": 6
+  "message_count": 6,
+  "work_directory": "sessions/550e8400-e29b-41d4-a716-446655440000",
+  "absolute_work_directory": "/path/to/project/sessions/550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+#### GET /api/v1/sessions/{session_id}/files
+
+获取会话工作目录中的文件列表。
+
+**响应示例**:
+```json
+{
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "work_directory": "sessions/550e8400-e29b-41d4-a716-446655440000",
+  "absolute_work_directory": "/path/to/project/sessions/550e8400-e29b-41d4-a716-446655440000",
+  "files": [
+    {
+      "name": "example.py",
+      "path": "example.py",
+      "size": 1024,
+      "modified_time": 1703123500.123
+    },
+    {
+      "name": "data.json",
+      "path": "subfolder/data.json",
+      "size": 512,
+      "modified_time": 1703123600.456
+    }
+  ],
+  "file_count": 2
 }
 ```
 
 #### DELETE /api/v1/sessions/{session_id}
 
-删除会话。
+删除会话及其工作目录。
 
 **响应示例**:
 ```json
@@ -270,6 +301,9 @@ curl -X POST http://localhost:8080/api/v1/chat/stream \
     "session_id": "550e8400-e29b-41d4-a716-446655440000",
     "message": "请详细介绍一下Amazon Q"
   }'
+
+# 获取会话文件列表
+curl http://localhost:8080/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000/files
 
 # 健康检查
 curl http://localhost:8080/health

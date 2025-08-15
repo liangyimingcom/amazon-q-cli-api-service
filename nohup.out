@@ -1,0 +1,85 @@
+2025-08-13 10:40:23,425 - __main__ - INFO - 启动Amazon Q CLI API服务...
+2025-08-13 10:40:23,425 - __main__ - INFO - 配置: HOST=0.0.0.0, PORT=8080, DEBUG=False
+ * Serving Flask app 'qcli_api_service.app'
+ * Debug mode: off
+2025-08-13 10:40:23,460 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.50.127:8080
+2025-08-13 10:40:23,460 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-13 10:40:28,624 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:28] "GET /health HTTP/1.1" 200 -
+2025-08-13 10:40:28,626 - qcli_api_service.services.session_manager - INFO - 创建新会话: 74b831ef-d60b-4326-bca2-35bbcdfaa6fb, 工作目录: sessions/74b831ef-d60b-4326-bca2-35bbcdfaa6fb
+2025-08-13 10:40:28,627 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:28] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:40:28,628 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:28] "GET /api/v1/sessions/74b831ef-d60b-4326-bca2-35bbcdfaa6fb HTTP/1.1" 200 -
+2025-08-13 10:40:43,198 - qcli_api_service.services.qcli_service - INFO - Q CLI处理完成，回复长度: 555 字符
+2025-08-13 10:40:43,199 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:43] "POST /api/v1/chat HTTP/1.1" 200 -
+2025-08-13 10:40:45,209 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:45] "GET /api/v1/sessions/74b831ef-d60b-4326-bca2-35bbcdfaa6fb/files HTTP/1.1" 200 -
+2025-08-13 10:40:45,212 - qcli_api_service.services.session_manager - INFO - 已清理会话目录: sessions/74b831ef-d60b-4326-bca2-35bbcdfaa6fb
+2025-08-13 10:40:45,212 - qcli_api_service.services.session_manager - INFO - 删除会话: 74b831ef-d60b-4326-bca2-35bbcdfaa6fb, 工作目录: sessions/74b831ef-d60b-4326-bca2-35bbcdfaa6fb
+2025-08-13 10:40:45,213 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:45] "DELETE /api/v1/sessions/74b831ef-d60b-4326-bca2-35bbcdfaa6fb HTTP/1.1" 200 -
+2025-08-13 10:40:45,215 - qcli_api_service.services.session_manager - INFO - 创建新会话: 0c8f517a-fbfa-462d-9f9a-b223f27fd965, 工作目录: sessions/0c8f517a-fbfa-462d-9f9a-b223f27fd965
+2025-08-13 10:40:45,215 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:45] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:40:45,217 - qcli_api_service.services.session_manager - INFO - 创建新会话: aff62490-37f0-4a4e-b846-b9e64c8d1451, 工作目录: sessions/aff62490-37f0-4a4e-b846-b9e64c8d1451
+2025-08-13 10:40:45,218 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:45] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:40:45,220 - qcli_api_service.services.session_manager - INFO - 创建新会话: 29d73559-9890-42de-9d38-ca596f8ecd67, 工作目录: sessions/29d73559-9890-42de-9d38-ca596f8ecd67
+2025-08-13 10:40:45,220 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:40:45] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:41:15,232 - qcli_api_service.services.qcli_service - ERROR - Q CLI调用超时
+2025-08-13 10:41:15,233 - qcli_api_service.services.qcli_service - ERROR - Q CLI调用超时
+2025-08-13 10:41:15,233 - qcli_api_service.services.qcli_service - ERROR - Q CLI调用超时
+2025-08-13 10:41:15,234 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "[35m[1mPOST /api/v1/chat HTTP/1.1[0m" 503 -
+2025-08-13 10:41:15,234 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "[35m[1mPOST /api/v1/chat HTTP/1.1[0m" 503 -
+2025-08-13 10:41:15,234 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "[35m[1mPOST /api/v1/chat HTTP/1.1[0m" 503 -
+2025-08-13 10:41:15,239 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/0c8f517a-fbfa-462d-9f9a-b223f27fd965 HTTP/1.1" 200 -
+2025-08-13 10:41:15,243 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/0c8f517a-fbfa-462d-9f9a-b223f27fd965/files HTTP/1.1" 200 -
+2025-08-13 10:41:15,246 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/aff62490-37f0-4a4e-b846-b9e64c8d1451 HTTP/1.1" 200 -
+2025-08-13 10:41:15,249 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/aff62490-37f0-4a4e-b846-b9e64c8d1451/files HTTP/1.1" 200 -
+2025-08-13 10:41:15,251 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/29d73559-9890-42de-9d38-ca596f8ecd67 HTTP/1.1" 200 -
+2025-08-13 10:41:15,254 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/29d73559-9890-42de-9d38-ca596f8ecd67/files HTTP/1.1" 200 -
+2025-08-13 10:41:15,257 - qcli_api_service.services.session_manager - INFO - 已清理会话目录: sessions/0c8f517a-fbfa-462d-9f9a-b223f27fd965
+2025-08-13 10:41:15,257 - qcli_api_service.services.session_manager - INFO - 删除会话: 0c8f517a-fbfa-462d-9f9a-b223f27fd965, 工作目录: sessions/0c8f517a-fbfa-462d-9f9a-b223f27fd965
+2025-08-13 10:41:15,258 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "DELETE /api/v1/sessions/0c8f517a-fbfa-462d-9f9a-b223f27fd965 HTTP/1.1" 200 -
+2025-08-13 10:41:15,260 - qcli_api_service.services.session_manager - INFO - 已清理会话目录: sessions/aff62490-37f0-4a4e-b846-b9e64c8d1451
+2025-08-13 10:41:15,260 - qcli_api_service.services.session_manager - INFO - 删除会话: aff62490-37f0-4a4e-b846-b9e64c8d1451, 工作目录: sessions/aff62490-37f0-4a4e-b846-b9e64c8d1451
+2025-08-13 10:41:15,261 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "DELETE /api/v1/sessions/aff62490-37f0-4a4e-b846-b9e64c8d1451 HTTP/1.1" 200 -
+2025-08-13 10:41:15,262 - qcli_api_service.services.session_manager - INFO - 已清理会话目录: sessions/29d73559-9890-42de-9d38-ca596f8ecd67
+2025-08-13 10:41:15,263 - qcli_api_service.services.session_manager - INFO - 删除会话: 29d73559-9890-42de-9d38-ca596f8ecd67, 工作目录: sessions/29d73559-9890-42de-9d38-ca596f8ecd67
+2025-08-13 10:41:15,263 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "DELETE /api/v1/sessions/29d73559-9890-42de-9d38-ca596f8ecd67 HTTP/1.1" 200 -
+2025-08-13 10:41:15,264 - qcli_api_service.services.session_manager - INFO - 创建新会话: 01b6df74-5c50-4eb0-a069-1cf49bfb33fc, 工作目录: sessions/01b6df74-5c50-4eb0-a069-1cf49bfb33fc
+2025-08-13 10:41:15,265 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:41:15,266 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:15] "GET /api/v1/sessions/01b6df74-5c50-4eb0-a069-1cf49bfb33fc HTTP/1.1" 200 -
+2025-08-13 10:41:36,309 - qcli_api_service.services.qcli_service - INFO - Q CLI处理完成，回复长度: 4433 字符
+2025-08-13 10:41:36,311 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:41:36] "POST /api/v1/chat HTTP/1.1" 200 -
+2025-08-13 10:42:07,329 - qcli_api_service.services.qcli_service - ERROR - Q CLI调用超时
+2025-08-13 10:42:07,331 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:42:07] "[35m[1mPOST /api/v1/chat HTTP/1.1[0m" 503 -
+2025-08-13 10:42:39,387 - __main__ - INFO - 启动Amazon Q CLI API服务...
+2025-08-13 10:42:39,387 - __main__ - INFO - 配置: HOST=0.0.0.0, PORT=8080, DEBUG=False
+ * Serving Flask app 'qcli_api_service.app'
+ * Debug mode: off
+Address already in use
+Port 8080 is in use by another program. Either identify and stop that program, or start the server with a different port.
+2025-08-13 10:43:26,253 - qcli_api_service.services.session_manager - INFO - 创建新会话: c68ae5a6-e234-4b38-a741-0f620aba792b, 工作目录: sessions/c68ae5a6-e234-4b38-a741-0f620aba792b
+2025-08-13 10:43:26,254 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:43:26] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:43:40,737 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:43:40] "POST /api/v1/chat/stream HTTP/1.1" 200 -
+2025-08-13 10:44:34,895 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:44:34] "POST /api/v1/chat/stream HTTP/1.1" 200 -
+2025-08-13 10:49:11,593 - qcli_api_service.services.session_manager - INFO - 创建新会话: aec270ba-a38f-476c-a43a-d03c7440ca93, 工作目录: sessions/aec270ba-a38f-476c-a43a-d03c7440ca93
+2025-08-13 10:49:11,594 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:49:11] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:49:17,792 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:49:17] "POST /api/v1/chat/stream HTTP/1.1" 200 -
+2025-08-13 10:50:24,382 - qcli_api_service.services.session_manager - INFO - 创建新会话: e8f2e288-2432-49b2-89ec-34173a45d458, 工作目录: sessions/e8f2e288-2432-49b2-89ec-34173a45d458
+2025-08-13 10:50:24,382 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:50:24] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 10:50:28,920 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 10:50:28] "POST /api/v1/chat/stream HTTP/1.1" 200 -
+2025-08-13 12:02:10,135 - qcli_api_service.services.session_manager - INFO - 创建新会话: edc1622e-148b-4ae3-b744-594e610a320e, 工作目录: sessions/edc1622e-148b-4ae3-b744-594e610a320e
+2025-08-13 12:02:10,137 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:02:10] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 12:02:26,841 - qcli_api_service.services.qcli_service - INFO - Q CLI处理完成，回复长度: 857 字符
+2025-08-13 12:02:26,843 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:02:26] "POST /api/v1/chat HTTP/1.1" 200 -
+2025-08-13 12:02:39,667 - qcli_api_service.services.session_manager - INFO - 创建新会话: eddcc4fc-af32-4167-89fb-75e9912538ce, 工作目录: sessions/eddcc4fc-af32-4167-89fb-75e9912538ce
+2025-08-13 12:02:39,669 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:02:39] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 12:03:05,820 - qcli_api_service.services.qcli_service - INFO - Q CLI处理完成，回复长度: 2333 字符
+2025-08-13 12:03:05,822 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:03:05] "POST /api/v1/chat HTTP/1.1" 200 -
+2025-08-13 12:04:05,930 - qcli_api_service.services.session_manager - INFO - 创建新会话: 8b4531fe-dd0a-4082-8217-a87dd9965fa9, 工作目录: sessions/8b4531fe-dd0a-4082-8217-a87dd9965fa9
+2025-08-13 12:04:05,931 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:04:05] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 12:04:29,320 - qcli_api_service.services.qcli_service - INFO - Q CLI处理完成，回复长度: 2247 字符
+2025-08-13 12:04:29,323 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:04:29] "POST /api/v1/chat HTTP/1.1" 200 -
+2025-08-13 12:08:23,369 - qcli_api_service.services.session_manager - INFO - 创建新会话: 023f8c51-978e-4084-90ee-177e68ea1579, 工作目录: sessions/023f8c51-978e-4084-90ee-177e68ea1579
+2025-08-13 12:08:23,370 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:08:23] "[35m[1mPOST /api/v1/sessions HTTP/1.1[0m" 201 -
+2025-08-13 12:08:46,491 - qcli_api_service.services.qcli_service - INFO - Q CLI处理完成，回复长度: 2475 字符
+2025-08-13 12:08:46,493 - werkzeug - INFO - 127.0.0.1 - - [13/Aug/2025 12:08:46] "POST /api/v1/chat HTTP/1.1" 200 -

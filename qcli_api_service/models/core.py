@@ -6,6 +6,7 @@
 
 import time
 import uuid
+import os
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -42,16 +43,24 @@ class Session:
     session_id: str
     created_at: float
     last_activity: float
+    work_directory: str  # 会话专用工作目录
     messages: List[Message] = field(default_factory=list)
     
     @classmethod
-    def create_new(cls) -> 'Session':
+    def create_new(cls, base_dir: str = "sessions") -> 'Session':
         """创建新会话"""
         current_time = time.time()
+        session_id = str(uuid.uuid4())
+        
+        # 创建会话专用工作目录
+        work_directory = os.path.join(base_dir, session_id)
+        os.makedirs(work_directory, exist_ok=True)
+        
         return cls(
-            session_id=str(uuid.uuid4()),
+            session_id=session_id,
             created_at=current_time,
             last_activity=current_time,
+            work_directory=work_directory,
             messages=[]
         )
     
@@ -79,6 +88,14 @@ class Session:
     def is_expired(self, expiry_seconds: int) -> bool:
         """检查会话是否过期"""
         return (time.time() - self.last_activity) > expiry_seconds
+    
+    def get_relative_work_directory(self) -> str:
+        """获取相对工作目录路径"""
+        return self.work_directory
+    
+    def get_absolute_work_directory(self) -> str:
+        """获取绝对工作目录路径"""
+        return os.path.abspath(self.work_directory)
 
 
 @dataclass

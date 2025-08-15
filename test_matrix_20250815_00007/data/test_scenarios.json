@@ -1,0 +1,427 @@
+{
+  "functional_scenarios": [
+    {
+      "id": "scenario_001",
+      "name": "完整对话流程",
+      "description": "测试从创建会话到删除会话的完整流程",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "你好"},
+          "expected_result": "response_received"
+        },
+        {
+          "action": "send_message", 
+          "data": {"message": "请介绍一下自己"},
+          "expected_result": "response_received"
+        },
+        {
+          "action": "get_session_info",
+          "expected_result": "session_info_complete"
+        },
+        {
+          "action": "delete_session",
+          "expected_result": "session_deleted"
+        }
+      ]
+    },
+    {
+      "id": "scenario_002",
+      "name": "上下文保持测试",
+      "description": "测试多轮对话中的上下文保持功能",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "我叫李明，是一名软件工程师"},
+          "expected_result": "context_stored"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "我的职业是什么？"},
+          "expected_result": "context_recalled",
+          "validation": "response_contains:软件工程师"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "我叫什么名字？"},
+          "expected_result": "context_recalled",
+          "validation": "response_contains:李明"
+        }
+      ]
+    },
+    {
+      "id": "scenario_003",
+      "name": "文件操作流程",
+      "description": "测试会话中的文件创建和管理",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "get_session_files",
+          "expected_result": "empty_file_list"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "请创建一个名为test.py的Python文件"},
+          "expected_result": "file_created"
+        },
+        {
+          "action": "get_session_files",
+          "expected_result": "file_list_updated",
+          "validation": "file_exists:test.py"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "请创建一个README.md文件"},
+          "expected_result": "file_created"
+        },
+        {
+          "action": "get_session_files",
+          "expected_result": "file_list_updated",
+          "validation": "file_count:2"
+        }
+      ]
+    }
+  ],
+  
+  "streaming_scenarios": [
+    {
+      "id": "streaming_001",
+      "name": "基础流式对话",
+      "description": "测试流式聊天的基本功能",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "start_streaming",
+          "data": {"message": "请详细介绍Python编程语言"},
+          "expected_result": "streaming_started"
+        },
+        {
+          "action": "receive_events",
+          "expected_events": ["session", "chunk", "done"],
+          "validation": "events_in_order"
+        }
+      ]
+    },
+    {
+      "id": "streaming_002",
+      "name": "流式错误处理",
+      "description": "测试流式聊天中的错误处理",
+      "steps": [
+        {
+          "action": "start_streaming",
+          "data": {"message": ""},
+          "expected_result": "error_event"
+        },
+        {
+          "action": "start_streaming",
+          "data": {"session_id": "invalid", "message": "test"},
+          "expected_result": "error_event"
+        }
+      ]
+    }
+  ],
+  
+  "concurrent_scenarios": [
+    {
+      "id": "concurrent_001",
+      "name": "多会话并发对话",
+      "description": "测试多个会话同时进行对话",
+      "concurrent_sessions": 5,
+      "steps": [
+        {
+          "action": "create_sessions",
+          "count": 5,
+          "expected_result": "all_sessions_created"
+        },
+        {
+          "action": "concurrent_chat",
+          "data": {
+            "messages": [
+              "你好，我是会话1",
+              "你好，我是会话2", 
+              "你好，我是会话3",
+              "你好，我是会话4",
+              "你好，我是会话5"
+            ]
+          },
+          "expected_result": "all_responses_received"
+        },
+        {
+          "action": "verify_isolation",
+          "expected_result": "responses_isolated"
+        }
+      ]
+    },
+    {
+      "id": "concurrent_002",
+      "name": "并发文件操作",
+      "description": "测试多个会话同时进行文件操作",
+      "concurrent_sessions": 3,
+      "steps": [
+        {
+          "action": "create_sessions",
+          "count": 3,
+          "expected_result": "all_sessions_created"
+        },
+        {
+          "action": "concurrent_file_creation",
+          "data": {
+            "messages": [
+              "请创建文件 session1.txt",
+              "请创建文件 session2.txt",
+              "请创建文件 session3.txt"
+            ]
+          },
+          "expected_result": "all_files_created"
+        },
+        {
+          "action": "verify_file_isolation",
+          "expected_result": "files_in_separate_directories"
+        }
+      ]
+    }
+  ],
+  
+  "performance_scenarios": [
+    {
+      "id": "performance_001",
+      "name": "响应时间测试",
+      "description": "测试不同类型消息的响应时间",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "measure_response_time",
+          "data": {"message": "你好"},
+          "expected_result": "response_time_acceptable",
+          "max_response_time": 2.0
+        },
+        {
+          "action": "measure_response_time",
+          "data": {"message": "请详细介绍机器学习"},
+          "expected_result": "response_time_acceptable",
+          "max_response_time": 10.0
+        }
+      ]
+    },
+    {
+      "id": "performance_002",
+      "name": "负载测试",
+      "description": "测试系统在高负载下的表现",
+      "load_config": {
+        "concurrent_users": 20,
+        "requests_per_user": 10,
+        "ramp_up_time": 30
+      },
+      "steps": [
+        {
+          "action": "ramp_up_load",
+          "expected_result": "load_applied"
+        },
+        {
+          "action": "monitor_performance",
+          "metrics": ["response_time", "error_rate", "throughput"],
+          "expected_result": "performance_acceptable"
+        },
+        {
+          "action": "ramp_down_load",
+          "expected_result": "load_removed"
+        }
+      ]
+    }
+  ],
+  
+  "security_scenarios": [
+    {
+      "id": "security_001",
+      "name": "路径遍历攻击防护",
+      "description": "测试对路径遍历攻击的防护",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "attempt_path_traversal",
+          "data": {"message": "请创建文件 ../../../etc/passwd"},
+          "expected_result": "attack_blocked"
+        },
+        {
+          "action": "verify_no_system_access",
+          "expected_result": "system_files_safe"
+        }
+      ]
+    },
+    {
+      "id": "security_002",
+      "name": "输入验证测试",
+      "description": "测试各种恶意输入的处理",
+      "malicious_inputs": [
+        "<script>alert('xss')</script>",
+        "'; DROP TABLE sessions; --",
+        "../../../etc/passwd",
+        "$(rm -rf /)",
+        "{{7*7}}"
+      ],
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "test_malicious_inputs",
+          "expected_result": "inputs_sanitized"
+        },
+        {
+          "action": "verify_system_integrity",
+          "expected_result": "system_uncompromised"
+        }
+      ]
+    }
+  ],
+  
+  "error_recovery_scenarios": [
+    {
+      "id": "recovery_001",
+      "name": "服务重启恢复",
+      "description": "测试服务重启后的状态恢复",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "send_message",
+          "data": {"message": "请创建一些测试文件"},
+          "expected_result": "files_created"
+        },
+        {
+          "action": "simulate_service_restart",
+          "expected_result": "service_restarted"
+        },
+        {
+          "action": "verify_session_state",
+          "expected_result": "state_recovered"
+        }
+      ]
+    },
+    {
+      "id": "recovery_002",
+      "name": "网络中断恢复",
+      "description": "测试网络中断后的恢复能力",
+      "steps": [
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "start_streaming",
+          "data": {"message": "请写一个长故事"},
+          "expected_result": "streaming_started"
+        },
+        {
+          "action": "simulate_network_interruption",
+          "expected_result": "connection_lost"
+        },
+        {
+          "action": "restore_network",
+          "expected_result": "connection_restored"
+        },
+        {
+          "action": "verify_graceful_handling",
+          "expected_result": "error_handled_gracefully"
+        }
+      ]
+    }
+  ],
+  
+  "integration_scenarios": [
+    {
+      "id": "integration_001",
+      "name": "端到端工作流",
+      "description": "测试完整的用户工作流程",
+      "steps": [
+        {
+          "action": "health_check",
+          "expected_result": "service_healthy"
+        },
+        {
+          "action": "create_session",
+          "expected_result": "session_created"
+        },
+        {
+          "action": "initial_greeting",
+          "data": {"message": "你好，我想创建一个Python项目"},
+          "expected_result": "greeting_response"
+        },
+        {
+          "action": "project_setup",
+          "data": {"message": "请帮我创建项目结构"},
+          "expected_result": "files_created"
+        },
+        {
+          "action": "code_generation",
+          "data": {"message": "请写一个主程序文件"},
+          "expected_result": "code_generated"
+        },
+        {
+          "action": "verify_project",
+          "expected_result": "project_complete"
+        },
+        {
+          "action": "cleanup",
+          "expected_result": "session_cleaned"
+        }
+      ]
+    }
+  ],
+  
+  "stress_test_scenarios": [
+    {
+      "id": "stress_001",
+      "name": "大量会话测试",
+      "description": "测试系统处理大量会话的能力",
+      "config": {
+        "max_sessions": 100,
+        "session_duration": 300,
+        "messages_per_session": 20
+      },
+      "steps": [
+        {
+          "action": "create_many_sessions",
+          "count": 100,
+          "expected_result": "all_sessions_created"
+        },
+        {
+          "action": "simulate_user_activity",
+          "expected_result": "system_stable"
+        },
+        {
+          "action": "monitor_resources",
+          "metrics": ["memory", "cpu", "disk"],
+          "expected_result": "resources_within_limits"
+        },
+        {
+          "action": "cleanup_sessions",
+          "expected_result": "resources_released"
+        }
+      ]
+    }
+  ]
+}

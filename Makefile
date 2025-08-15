@@ -1,6 +1,6 @@
 # Amazon Q CLI API服务开发工具
 
-.PHONY: help install test lint format clean run dev
+.PHONY: help install test lint format clean run dev list-sessions clean-sessions clean-old-sessions export-sessions test-isolation demo health
 
 help:  ## 显示帮助信息
 	@echo "Amazon Q CLI API服务开发工具"
@@ -48,3 +48,28 @@ check:  ## 运行所有检查（测试、代码检查、格式化）
 	make format
 	make lint
 	make test
+
+# 会话管理命令
+list-sessions:  ## 列出所有会话目录
+	python scripts/manage_sessions.py list
+
+clean-sessions:  ## 清理空的会话目录
+	python scripts/manage_sessions.py cleanup-empty
+
+clean-old-sessions:  ## 清理过期的会话目录（24小时）
+	python scripts/manage_sessions.py cleanup-old --hours 24
+
+export-sessions:  ## 导出会话信息到JSON文件
+	python scripts/manage_sessions.py export sessions_info.json
+	@echo "会话信息已导出到 sessions_info.json"
+
+# 测试和演示命令
+test-isolation:  ## 测试会话隔离功能
+	python scripts/test_session_isolation.py
+
+demo:  ## 运行会话隔离演示
+	python examples/session_isolation_demo.py
+
+# 健康检查
+health:  ## 检查服务健康状态
+	curl -f http://localhost:8080/health || exit 1
