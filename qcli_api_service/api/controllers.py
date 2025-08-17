@@ -11,7 +11,7 @@ import os
 from flask import request, jsonify, Response, stream_with_context, current_app
 from qcli_api_service.models.core import ChatRequest, ChatResponse, Message
 from qcli_api_service.services.session_manager import session_manager
-from qcli_api_service.services.qcli_service import qcli_service
+from qcli_api_service.services.session_process_manager import session_process_manager
 from qcli_api_service.utils.validators import input_validator
 from qcli_api_service.utils.errors import (
     APIError, ValidationError, SessionError, ServiceError, InternalError,
@@ -62,17 +62,28 @@ def chat():
         user_message = Message.create_user_message(chat_request.message)
         session_manager.add_message(session.session_id, user_message)
         
-        # 获取对话上下文
-        context = session_manager.get_context(session.session_id)
-        
-        # 调用Q CLI
+        # 使用SessionProcessManager获取或创建长期进程
         try:
-            response_text = qcli_service.chat(
-                chat_request.message, 
-                context, 
+            process = session_process_manager.get_or_create_process(
+                session.session_id,
                 work_directory=session.work_directory
             )
-        except RuntimeError as e:
+            
+            # 发送消息到长期进程
+            if not process.send_message(chat_request.message):
+                raise RuntimeError("发送消息到Q CLI进程失败")
+            
+            # 收集完整响应
+            response_parts = []
+            for chunk in process.read_response():
+                response_parts.append(chunk)
+            
+            response_text = "\n".join(response_parts)
+            
+            if not response_text:
+                raise RuntimeError("Q CLI没有返回有效响应")
+                
+        except Exception as e:
             error = handle_qcli_error(e)
             log_error(error, {
                 "endpoint": "/api/v1/chat", 
@@ -91,7 +102,7 @@ def chat():
         # 创建响应，确保中文正确显示
         response_data = {
             "session_id": response.session_id,
-            "message": response.message,
+            "response": response.message,  # 使用response字段名，与前端保持一致
             "timestamp": response.timestamp
         }
         
@@ -147,30 +158,42 @@ def stream_chat():
         user_message = Message.create_user_message(chat_request.message)
         session_manager.add_message(session.session_id, user_message)
         
-        # 获取对话上下文
-        context = session_manager.get_context(session.session_id)
-        
         # 创建流式响应
         def generate():
             try:
                 # 发送会话ID
-                yield f"data: {{'session_id': '{session.session_id}', 'type': 'session'}}\n\n"
+                session_data = {
+                    'session_id': session.session_id,
+                    'type': 'session'
+                }
+                yield f"data: {json.dumps(session_data, ensure_ascii=False)}\n\n"
+                
+                # 获取或创建会话进程
+                process = session_process_manager.get_or_create_process(
+                    session.session_id,
+                    work_directory=session.work_directory
+                )
+                
+                # 发送消息到长期进程
+                if not process.send_message(chat_request.message):
+                    raise RuntimeError("发送消息到Q CLI进程失败")
                 
                 # 收集完整回复用于保存到会话
                 full_response = []
                 
-                # 流式调用Q CLI
-                for chunk in qcli_service.stream_chat(
-                    chat_request.message, 
-                    context, 
-                    work_directory=session.work_directory
-                ):
+                # 流式读取响应
+                for chunk in process.read_response():
                     full_response.append(chunk)
                     # 发送数据块
-                    yield f"data: {{'message': '{_escape_json(chunk)}', 'type': 'chunk'}}\n\n"
+                    chunk_data = {
+                        'message': chunk,
+                        'type': 'chunk'
+                    }
+                    yield f"data: {json.dumps(chunk_data, ensure_ascii=False)}\n\n"
                 
                 # 发送完成信号
-                yield f"data: {{'type': 'done'}}\n\n"
+                done_data = {'type': 'done'}
+                yield f"data: {json.dumps(done_data, ensure_ascii=False)}\n\n"
                 
                 # 保存完整回复到会话
                 if full_response:
@@ -178,25 +201,15 @@ def stream_chat():
                     assistant_message = Message.create_assistant_message(complete_response)
                     session_manager.add_message(session.session_id, assistant_message)
                 
-            except RuntimeError as e:
-                # 处理Q CLI错误
-                error = handle_qcli_error(e)
+            except Exception as e:
+                # 处理所有错误
+                error = handle_qcli_error(e) if isinstance(e, RuntimeError) else InternalError("流式聊天内部错误", original_error=e)
                 log_error(error, {
                     "endpoint": "/api/v1/chat/stream", 
                     "session_id": session.session_id,
                     "message_length": len(chat_request.message)
                 })
                 # 发送详细错误信息
-                error_data = {
-                    'error': error.message,
-                    'code': error.code,
-                    'suggestions': error.suggestions,
-                    'type': 'error'
-                }
-                yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
-            except Exception as e:
-                error = InternalError("流式聊天内部错误", original_error=e)
-                log_error(error, {"endpoint": "/api/v1/chat/stream", "session_id": session.session_id})
                 error_data = {
                     'error': error.message,
                     'code': error.code,
@@ -228,11 +241,13 @@ def stream_chat():
 def health():
     """健康检查接口"""
     try:
-        # 检查Q CLI可用性
+        # 检查Q CLI可用性 - 导入qcli_service用于健康检查
+        from qcli_api_service.services.qcli_service import qcli_service
         qcli_available = qcli_service.is_available()
         
         # 获取基本统计信息
         active_sessions = session_manager.get_active_session_count()
+        active_processes = session_process_manager.get_active_process_count()
         
         status = "healthy" if qcli_available else "degraded"
         
@@ -241,6 +256,7 @@ def health():
             "timestamp": time.time(),
             "qcli_available": qcli_available,
             "active_sessions": active_sessions,
+            "active_processes": active_processes,
             "version": "1.0.0"
         })
         

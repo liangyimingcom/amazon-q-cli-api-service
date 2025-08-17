@@ -9,6 +9,8 @@ import subprocess
 import threading
 import time
 import logging
+import select
+import sys
 from typing import Dict, Optional, Iterator
 from qcli_api_service.config import config
 
@@ -25,6 +27,13 @@ class SessionProcess:
         self.lock = threading.Lock()
         self.created_at = time.time()
         self.last_activity = time.time()
+        
+        # 响应处理相关
+        self.response_queue = []
+        self.response_lock = threading.Lock()
+        self.output_thread = None
+        self.reading = False
+        self.current_response = []
         
     def start(self) -> bool:
         """启动Q Chat进程"""
@@ -52,12 +61,101 @@ class SessionProcess:
                 )
                 
                 logger.info(f"为会话 {self.session_id} 启动Q Chat进程 PID: {self.process.pid}")
+                
+                # 启动后台线程持续读取输出
+                self._start_output_reader()
                 return True
                 
             except Exception as e:
                 logger.error(f"启动Q Chat进程失败 (会话 {self.session_id}): {e}")
                 self.process = None
                 return False
+    
+    def _start_output_reader(self):
+        """启动后台线程持续读取输出"""
+        if self.output_thread and self.output_thread.is_alive():
+            return
+        
+        self.reading = True
+        self.output_thread = threading.Thread(target=self._read_output_continuously, daemon=True)
+        self.output_thread.start()
+        logger.debug(f"为会话 {self.session_id} 启动输出读取线程")
+    
+    def _read_output_continuously(self):
+        """持续读取Q Chat输出的后台线程"""
+        last_output_time = time.time()
+        
+        try:
+            while self.reading and self.is_alive():
+                try:
+                    line = self.process.stdout.readline()
+                    if not line:
+                        # 检查是否长时间没有输出，如果有当前响应则保存
+                        current_time = time.time()
+                        if current_time - last_output_time > 2.0:  # 2秒没有新输出就保存
+                            with self.response_lock:
+                                if self.current_response:
+                                    response_text = "\n".join(self.current_response)
+                                    self.response_queue.append(response_text)
+                                    logger.debug(f"自动保存响应到队列 (会话 {self.session_id}): {len(response_text)} 字符")
+                                    self.current_response = []
+                                    last_output_time = current_time  # 重置时间
+                        
+                        time.sleep(0.1)
+                        continue
+                    
+                    last_output_time = time.time()
+                    
+                    # 清理ANSI颜色代码
+                    cleaned_line = self._clean_line(line)
+                    
+                    # 处理输出行
+                    self._process_output_line(cleaned_line)
+                    
+                except Exception as e:
+                    logger.debug(f"读取输出行时出错 (会话 {self.session_id}): {e}")
+                    time.sleep(0.1)
+                    
+        except Exception as e:
+            logger.error(f"输出读取线程异常 (会话 {self.session_id}): {e}")
+        finally:
+            # 线程结束时保存剩余响应
+            with self.response_lock:
+                if self.current_response:
+                    response_text = "\n".join(self.current_response)
+                    self.response_queue.append(response_text)
+                    logger.debug(f"线程结束时保存响应 (会话 {self.session_id}): {len(response_text)} 字符")
+                    self.current_response = []
+            
+            logger.debug(f"会话 {self.session_id} 输出读取线程结束")
+    
+    def _process_output_line(self, line: str):
+        """处理单行输出"""
+        with self.response_lock:
+            # 检查是否是用户输入回显（以 > 开头）
+            if line.startswith("> "):
+                # 如果有当前响应，保存它
+                if self.current_response:
+                    response_text = "\n".join(self.current_response)
+                    self.response_queue.append(response_text)
+                    logger.debug(f"保存响应到队列 (会话 {self.session_id}): {len(response_text)} 字符")
+                    self.current_response = []
+                return
+            
+            # 跳过无效行
+            if self._should_skip_line(line):
+                return
+            
+            # 收集响应内容
+            if line.strip():  # 只收集非空行
+                self.current_response.append(line)
+                
+                # 对于长响应，定期保存部分内容到队列（流式输出）
+                if len(self.current_response) >= 20:  # 每20行保存一次，减少频繁保存
+                    response_text = "\n".join(self.current_response)
+                    self.response_queue.append(response_text)
+                    logger.debug(f"保存部分响应到队列 (会话 {self.session_id}): {len(response_text)} 字符")
+                    self.current_response = []
     
     def is_alive(self) -> bool:
         """检查进程是否还活着"""
@@ -90,35 +188,74 @@ class SessionProcess:
                 return False
     
     def read_response(self) -> Iterator[str]:
-        """读取Q Chat的响应（流式）"""
+        """从队列读取Q Chat的响应（支持流式输出）"""
         if not self.is_alive():
             logger.error(f"进程未运行 (会话 {self.session_id})")
             return
         
+        max_wait_time = 600  # 最大等待时间（秒）- 增加到120-》600秒以支持复杂任务
+        start_time = time.time()
+        last_response_time = start_time
+        response_count = 0
+        
         try:
-            buffer = []
-            while True:
-                line = self.process.stdout.readline()
-                if not line:
+            while time.time() - start_time < max_wait_time:
+                current_time = time.time()
+                
+                # 检查队列中是否有新响应
+                with self.response_lock:
+                    if self.response_queue:
+                        # 获取队列中的响应
+                        response = self.response_queue.pop(0)
+                        response_count += 1
+                        last_response_time = current_time
+                        logger.info(f"从队列获取响应 #{response_count} (会话 {self.session_id}): {len(response)} 字符")
+                        yield response
+                        continue  # 继续检查是否有更多响应
+                
+                # 如果没有队列响应，检查是否有部分内容
+                if current_time - last_response_time > 3.0:  # 3秒没有新响应
+                    with self.response_lock:
+                        if self.current_response:
+                            response = "\n".join(self.current_response)
+                            self.current_response = []
+                            response_count += 1
+                            last_response_time = current_time
+                            logger.debug(f"获取部分响应 #{response_count} (会话 {self.session_id}): {len(response)} 字符")
+                            yield response
+                            continue
+                
+                # 如果已经有响应且长时间没有新内容，可能响应结束了
+                # 对于复杂任务，给更多时间，特别是涉及多个文件创建的任务
+                if response_count == 0:
+                    idle_timeout = 35.0  # 第一个响应等待25秒
+                elif response_count < 5:
+                    idle_timeout = 35.0  # 前几个响应等待35秒（复杂任务需要更多思考时间）
+                elif response_count < 15:
+                    idle_timeout = 65.0  # 中等响应等待30秒
+                else:
+                    idle_timeout = 100.0  # 后续响应等待25秒
+                
+                if response_count > 0 and current_time - last_response_time > idle_timeout:
+                    logger.info(f"响应可能结束 (会话 {self.session_id})，共 {response_count} 个响应块，空闲时间: {current_time - last_response_time:.1f}秒，使用的超时时间: {idle_timeout}秒")
                     break
                 
-                # 清理ANSI颜色代码
-                cleaned_line = self._clean_line(line)
-                
-                # 跳过无效行
-                if not cleaned_line or self._should_skip_line(cleaned_line):
-                    continue
-                
-                buffer.append(cleaned_line)
-                
-                # 当缓冲区有内容时，返回
-                if len(buffer) >= 3:  # 每3行返回一次
-                    yield "\n".join(buffer)
-                    buffer = []
+                # 短暂等待
+                time.sleep(0.1)
             
-            # 返回剩余内容
-            if buffer:
-                yield "\n".join(buffer)
+            # 最后检查是否还有剩余内容
+            with self.response_lock:
+                if self.current_response:
+                    response = "\n".join(self.current_response)
+                    self.current_response = []
+                    response_count += 1
+                    logger.debug(f"获取最终响应 #{response_count} (会话 {self.session_id}): {len(response)} 字符")
+                    yield response
+            
+            if response_count == 0:
+                logger.warning(f"读取响应超时，未获取到任何响应 (会话 {self.session_id})")
+            else:
+                logger.info(f"响应读取完成 (会话 {self.session_id})，共 {response_count} 个响应块")
                 
         except Exception as e:
             logger.error(f"读取响应失败 (会话 {self.session_id}): {e}")
@@ -126,6 +263,9 @@ class SessionProcess:
     def terminate(self):
         """终止Q Chat进程"""
         with self.lock:
+            # 停止后台读取线程
+            self.reading = False
+            
             if self.process:
                 try:
                     # 发送退出命令
@@ -150,6 +290,10 @@ class SessionProcess:
                     logger.error(f"终止进程失败 (会话 {self.session_id}): {e}")
                 finally:
                     self.process = None
+                    
+            # 等待输出线程结束
+            if self.output_thread and self.output_thread.is_alive():
+                self.output_thread.join(timeout=2)
     
     def _clean_line(self, line: str) -> str:
         """清理单行输出"""

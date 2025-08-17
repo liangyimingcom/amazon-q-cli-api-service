@@ -1,0 +1,11 @@
+
+> amazon-q-web-ui@0.0.0 dev
+> vite
+
+Port 3000 is in use, trying another one...
+
+  VITE v7.1.2  ready in 102 ms
+
+  ➜  Local:   http://localhost:3001/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help

@@ -1,0 +1,357 @@
+/* 全局样式修复 */
+
+/* 确保深色模式下的文字对比度 */
+.dark {
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --text-muted: #d1d5db;
+  --bg-primary: #1f2937;
+  --bg-secondary: #374151;
+  --border-color: #4b5563;
+}
+
+/* 修复深色模式下的标题样式 */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: var(--text-primary) !important;
+}
+
+/* 修复深色模式下的普通文字 */
+.dark p,
+.dark span,
+.dark div {
+  color: var(--text-secondary);
+}
+
+/* 修复深色模式下的链接和按钮 */
+.dark a,
+.dark button {
+  color: var(--text-secondary);
+}
+
+.dark a:hover,
+.dark button:hover {
+  color: var(--text-primary);
+}
+
+/* 修复Antd组件在深色模式下的样式 */
+.dark .ant-layout-header {
+  background-color: var(--bg-secondary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+.dark .ant-menu {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark .ant-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+.dark .ant-menu-item:hover {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .ant-menu-item-selected {
+  color: #1677ff !important;
+  background-color: rgba(22, 119, 255, 0.1) !important;
+}
+
+/* 修复消息气泡样式 */
+.dark .message-bubble {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark .message-bubble.user {
+  background-color: #1677ff;
+  color: white;
+}
+
+.dark .message-bubble.assistant {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+/* 修复输入框样式 */
+.dark .ant-input,
+.dark .ant-textarea {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark .ant-input:focus,
+.dark .ant-textarea:focus {
+  border-color: #1677ff !important;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2) !important;
+}
+
+/* 修复按钮样式 */
+.dark .ant-btn {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark .ant-btn:hover {
+  border-color: #1677ff;
+  color: #1677ff;
+}
+
+.dark .ant-btn-primary {
+  background-color: #1677ff;
+  border-color: #1677ff;
+  color: white;
+}
+
+.dark .ant-btn-primary:hover {
+  background-color: #4096ff;
+  border-color: #4096ff;
+}
+
+/* 修复卡片样式 */
+.dark .ant-card {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark .ant-card-head {
+  background-color: var(--bg-secondary) !important;
+  border-bottom-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .ant-card-body {
+  color: var(--text-secondary) !important;
+}
+
+/* 修复Badge样式 */
+.dark .ant-badge-status-text {
+  color: var(--text-secondary) !important;
+}
+
+/* 修复Tooltip样式 */
+.dark .ant-tooltip-inner {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 修复滚动条样式 */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* 确保文字选择时的对比度 */
+.dark ::selection {
+  background-color: rgba(22, 119, 255, 0.3);
+  color: var(--text-primary);
+}
+
+/* 修复加载状态样式 */
+.dark .ant-spin-dot-item {
+  background-color: #1677ff !important;
+}
+
+/* 修复空状态样式 */
+.dark .ant-empty-description {
+  color: var(--text-muted) !important;
+}
+
+/* 亮色模式样式优化 */
+:root {
+  --light-text-primary: #1f2937;
+  --light-text-secondary: #374151;
+  --light-text-muted: #6b7280;
+  --light-bg-primary: #ffffff;
+  --light-bg-secondary: #f9fafb;
+  --light-border-color: #e5e7eb;
+}
+
+/* 亮色模式下的文字对比度优化 */
+body:not(.dark) {
+  color: var(--light-text-primary);
+  background-color: var(--light-bg-primary);
+}
+
+/* 亮色模式下的标题样式 */
+body:not(.dark) h1,
+body:not(.dark) h2,
+body:not(.dark) h3,
+body:not(.dark) h4,
+body:not(.dark) h5,
+body:not(.dark) h6 {
+  color: var(--light-text-primary) !important;
+  font-weight: 600;
+}
+
+/* 亮色模式下的普通文字 */
+body:not(.dark) p,
+body:not(.dark) span,
+body:not(.dark) div {
+  color: var(--light-text-secondary);
+}
+
+/* 亮色模式下的链接和按钮 */
+body:not(.dark) a {
+  color: #1677ff;
+}
+
+body:not(.dark) a:hover {
+  color: #4096ff;
+}
+
+/* 亮色模式下的消息气泡样式 */
+body:not(.dark) .message-bubble {
+  background-color: var(--light-bg-secondary);
+  border: 1px solid var(--light-border-color);
+  color: var(--light-text-secondary);
+}
+
+body:not(.dark) .message-bubble.user {
+  background-color: #1677ff;
+  color: white;
+  border-color: #1677ff;
+}
+
+body:not(.dark) .message-bubble.assistant {
+  background-color: var(--light-bg-secondary);
+  color: var(--light-text-secondary);
+  border-color: var(--light-border-color);
+}
+
+/* 亮色模式下的 Antd 组件样式优化 */
+body:not(.dark) .ant-layout-header {
+  background-color: var(--light-bg-primary) !important;
+  border-bottom: 1px solid var(--light-border-color) !important;
+}
+
+body:not(.dark) .ant-menu {
+  background-color: var(--light-bg-primary) !important;
+  color: var(--light-text-secondary) !important;
+}
+
+body:not(.dark) .ant-menu-item {
+  color: var(--light-text-secondary) !important;
+}
+
+body:not(.dark) .ant-menu-item:hover {
+  color: var(--light-text-primary) !important;
+  background-color: var(--light-bg-secondary) !important;
+}
+
+body:not(.dark) .ant-menu-item-selected {
+  color: #1677ff !important;
+  background-color: rgba(22, 119, 255, 0.1) !important;
+}
+
+/* 亮色模式下的输入框样式 */
+body:not(.dark) .ant-input,
+body:not(.dark) .ant-textarea {
+  background-color: var(--light-bg-primary) !important;
+  border-color: var(--light-border-color) !important;
+  color: var(--light-text-secondary) !important;
+}
+
+body:not(.dark) .ant-input:focus,
+body:not(.dark) .ant-textarea:focus {
+  border-color: #1677ff !important;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2) !important;
+}
+
+/* 亮色模式下的按钮样式 */
+body:not(.dark) .ant-btn {
+  border-color: var(--light-border-color);
+  color: var(--light-text-secondary);
+  background-color: var(--light-bg-primary);
+}
+
+body:not(.dark) .ant-btn:hover {
+  border-color: #1677ff;
+  color: #1677ff;
+}
+
+body:not(.dark) .ant-btn-primary {
+  background-color: #1677ff;
+  border-color: #1677ff;
+  color: white;
+}
+
+body:not(.dark) .ant-btn-primary:hover {
+  background-color: #4096ff;
+  border-color: #4096ff;
+}
+
+/* 亮色模式下的卡片样式 */
+body:not(.dark) .ant-card {
+  background-color: var(--light-bg-primary) !important;
+  border-color: var(--light-border-color) !important;
+}
+
+body:not(.dark) .ant-card-head {
+  background-color: var(--light-bg-secondary) !important;
+  border-bottom-color: var(--light-border-color) !important;
+  color: var(--light-text-primary) !important;
+}
+
+body:not(.dark) .ant-card-body {
+  color: var(--light-text-secondary) !important;
+}
+
+/* 亮色模式下的滚动条样式 */
+body:not(.dark) ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body:not(.dark) ::-webkit-scrollbar-track {
+  background: var(--light-bg-secondary);
+}
+
+body:not(.dark) ::-webkit-scrollbar-thumb {
+  background: var(--light-border-color);
+  border-radius: 4px;
+}
+
+body:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* 亮色模式下的文字选择样式 */
+body:not(.dark) ::selection {
+  background-color: rgba(22, 119, 255, 0.2);
+  color: var(--light-text-primary);
+}
+
+/* 确保亮色模式下的高对比度 */
+body:not(.dark) .text-gray-900 {
+  color: var(--light-text-primary) !important;
+}
+
+body:not(.dark) .text-gray-700 {
+  color: var(--light-text-secondary) !important;
+}
+
+body:not(.dark) .text-gray-500 {
+  color: var(--light-text-muted) !important;
+}

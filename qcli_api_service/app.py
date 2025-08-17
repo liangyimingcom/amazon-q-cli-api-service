@@ -7,6 +7,7 @@ Flask应用工厂 - 核心版本
 import logging
 import json
 from flask import Flask, jsonify, Response
+from flask_cors import CORS
 from werkzeug.exceptions import BadRequest
 from qcli_api_service.config import config
 from qcli_api_service.api.routes import register_routes
@@ -15,6 +16,14 @@ from qcli_api_service.api.routes import register_routes
 def create_app() -> Flask:
     """创建Flask应用实例"""
     app = Flask(__name__)
+    
+    # 配置CORS - 允许前端访问
+    CORS(app, origins=[
+        'http://localhost:3000',  # 开发环境前端
+        'http://127.0.0.1:3000',  # 本地前端
+        'http://localhost:5173',  # Vite默认端口
+        'http://127.0.0.1:5173'   # Vite本地
+    ], supports_credentials=True)
     
     # 配置Flask
     app.config['DEBUG'] = config.DEBUG

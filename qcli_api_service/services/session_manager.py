@@ -44,6 +44,15 @@ class SessionManager:
         with self._lock:
             if session_id in self._sessions:
                 session = self._sessions[session_id]
+                
+                # 清理对应的Q CLI进程
+                try:
+                    from qcli_api_service.services.session_process_manager import session_process_manager
+                    session_process_manager.remove_process(session_id)
+                    logger.info(f"已清理会话 {session_id} 的Q CLI进程")
+                except Exception as e:
+                    logger.warning(f"清理会话 {session_id} 的Q CLI进程时出错: {e}")
+                
                 # 删除会话工作目录
                 self._cleanup_session_directory(session.work_directory)
                 del self._sessions[session_id]
@@ -88,6 +97,14 @@ class SessionManager:
                     expired_sessions.append((session_id, session.work_directory))
             
             for session_id, work_dir in expired_sessions:
+                # 清理对应的Q CLI进程
+                try:
+                    from qcli_api_service.services.session_process_manager import session_process_manager
+                    session_process_manager.remove_process(session_id)
+                    logger.info(f"已清理过期会话 {session_id} 的Q CLI进程")
+                except Exception as e:
+                    logger.warning(f"清理过期会话 {session_id} 的Q CLI进程时出错: {e}")
+                
                 # 清理会话工作目录
                 if config.AUTO_CLEANUP_SESSIONS:
                     self._cleanup_session_directory(work_dir)
